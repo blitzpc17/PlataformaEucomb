@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Puesto;
+use Auth;
 
 class PuestosController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index(){
-        return view('puestos');
+        $user = Auth::user();
+        return view('puestos', compact('user'));
     }
 
     public function listar(){

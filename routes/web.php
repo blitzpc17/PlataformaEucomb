@@ -6,6 +6,8 @@ use App\Http\Controllers\EmpresasController;
 use App\Http\Controllers\EmpleadosController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InicioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,9 +20,18 @@ use App\Http\Controllers\UsuariosController;
 |
 */
 
-Route::get('/', function () {
-    return view('dashboard');
-})->name('admin');
+
+
+Route::get('login', function(){
+    return view('layouts.login');
+})->name('login');
+
+Route::post('auth', [AuthController::class, 'Authenticate'])->name('us.auth');
+Route::get('logauth', [AuthController::class, 'Logout'])->name('us.logout');
+
+
+///Inicio
+Route::get('/', [InicioController::class, 'index'])->name('admin');
 
 /* ***RECURSOS HUMANOS*** */
 /*  CATALOGOS */
@@ -42,14 +53,16 @@ Route::post('empresas/eliminar', [EmpresasController::class, 'delete'])->name('e
 //Empleados
 Route::get('empleados', [EmpleadosController::class, 'index'])->name('empleados');
 Route::get('empleados/listar', [EmpleadosController::class, 'listar'])->name('empleados.listar');
+Route::get('empleados/listarselect', [EmpleadosController::class, 'listarSelect'])->name('empleados.listarselect');
 Route::post('empleados/save', [EmpleadosController::class, 'save'])->name('empleados.save');
-Route::post('empleados/eliminar', [EmpleadosController::class, 'delete'])->name('empleados.eliminar');
+Route::post('empleados/baja', [EmpleadosController::class, 'baja'])->name('empleados.baja');
 
 /* ***SISTEMA*** */
 /* CATALOGOS */
 //ROLES
 Route::get('roles', [RolesController::class, 'index'])->name('roles');
 Route::get('roles/listar', [RolesController::class, 'listar'])->name('roles.listar');
+Route::get('roles/listarselect', [RolesController::class, 'listarSelect'])->name('roles.listarselect');
 Route::post('roles/save', [RolesController::class, 'save'])->name('roles.save');
 Route::post('roles/eliminar', [RolesController::class, 'delete'])->name('roles.eliminar');
 
@@ -59,4 +72,4 @@ Route::post('roles/eliminar', [RolesController::class, 'delete'])->name('roles.e
 Route::get('usuarios', [UsuariosController::class, 'index'])->name('usuarios');
 Route::get('usuarios/listar', [UsuariosController::class, 'listar'])->name('usuarios.listar');
 Route::post('usuarios/save', [UsuariosController::class, 'save'])->name('usuarios.save');
-Route::post('usuarios/eliminar', [UsuariosController::class, 'delete'])->name('usuarios.eliminar');
+Route::post('usuarios/baja', [UsuariosController::class, 'desactivar'])->name('usuarios.baja');

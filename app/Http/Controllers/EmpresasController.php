@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Empresa;
+use Auth;
 
 class EmpresasController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+    
     public function index(){
-        return view('empresas');
+        $user = Auth::user();
+        return view('empresas', compact('user'));
     }
 
     public function listar(){

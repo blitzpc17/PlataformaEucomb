@@ -89,13 +89,13 @@
                                     </div>
                                     <div class="form-group col-sm-12 col-md-6">
                                         <label for="">Apellido Materno:</label>
-                                        <input type="text" name="amaterno" id="apaterno" class="form-control">
+                                        <input type="text" name="amaterno" id="amaterno" class="form-control">
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="">Fecha Nacimiento:</label>
-                                    <input type="text" id="fechaNacimiento" name="fechaNacimiento" class="form-control">
+                                    <input type="text" id="fechaNac" name="fechaNacimiento" class="form-control">
                                 </div>
 
                                 <div class="form-group">
@@ -126,7 +126,7 @@
 
                                 <div class="form-group">
                                     <label for="">Fecha de ingreso:</label>
-                                    <input type="text" id="fechaIngreso" name="fechaIngreso" class="form-control">
+                                    <input type="text" id="fechaIng" name="fechaIngreso" class="form-control">
                                 </div>
 
                                 <div class="form-row">
@@ -166,7 +166,7 @@
 
         listar();
 
-        $('#fechaNacimiento').bootstrapMaterialDatePicker({
+        $('#fechaNac').bootstrapMaterialDatePicker({
             format: 'DD/MM/YYYY',
             lang: 'es',
             time:false,
@@ -174,7 +174,7 @@
             tame: false,
         });
 
-        $('#fechaIngreso').bootstrapMaterialDatePicker({
+        $('#fechaIng').bootstrapMaterialDatePicker({
             format: 'DD/MM/YYYY',
             lang: 'es',
             time:false,
@@ -191,10 +191,15 @@
 
         $('#frm').on('submit', function(e){
             e.preventDefault();
+            let data =  new FormData(this)
+            let fechaNac = $('#fechaNac').val()
+            data.append('fechaNacimiento', moment(fechaNac, 'DD/MM/YYYY').format('YYYY-MM-DD'));
+            let fechaIng = $('#fechaIng').val()
+            data.append('fechaIngreso', moment(fechaIng, 'DD/MM/YYYY').format('YYYY-MM-DD'));
             $.ajax({
                 method: "POST",
                 url: "{{route('empleados.save')}}",
-                data: new FormData(this),
+                data: data,
                 contentType: false,
                 cache: false,
                 processData:false, 
@@ -221,23 +226,45 @@
 
     function limpiarFormulario(){
         $("#nombre").val(null)
-        $("#id").val(null)
+        $("#id").val(null)             
+        $("#apaterno").val(null)
+        $("#amaterno").val(null)       
+        $("#fechaNac").val(null)      
+        $("#fechaIng").val(null)   
+        SelectPuestos();
+        $("#empresa").val(null)
     }
     function cargarRegistro(id){
         limpiarFormulario();
         const obj = data.find(el => el.Id == id)
-        $("#nombre").val(obj.Nombre)
+        $("#nombre").val(obj.Nombres)
+        $("#apaterno").val(obj.ApellidoPaterno)
+        $("#amaterno").val(obj.ApellidoMaterno)
+
+        let fechaNac = moment(obj.FechaNacimiento, 'YYYY-MM-DD').format('DD/MM/YYYY')
+        $("#fechaNac").val(fechaNac)
+
+        let fechaIng = moment(obj.FechaIngreso, 'YYYY-MM-DD').format('DD/MM/YYYY')
+        $("#fechaIng").val(fechaIng)
+   
+        $("#puesto").val(obj.PUESTOSId)
+        $("#puesto").change();
+
+        $("#empresa").val(obj.EMPRESASId)
+        $("#empresa").change();
+
         $("#id").val(obj.Id)
         $('.modal-title').text('Modificar registro')
         $("#md-registro").modal("toggle")
     }
-    function eliminar(id){
+    function eliminar(id, opc){
         let data = new FormData();
         data.append('id', id)
+        data.append('baja', opc)
 
         $.ajax({
             method: "POST",
-            url: "{{route('empleados.eliminar')}}",
+            url: "{{route('empleados.baja')}}",
             data: data,
             contentType: false,
             cache: false,
@@ -269,14 +296,15 @@
                 }
                 let html="";
                 $.each(data, function (i, val) { 
+                    console.log(val)
                      html+=`<tr>
                                 <td>${(i+1)}</td>
-                                <td>${val.Nombres}</td>
-                                <td>${val.Baja}</td>
-                                <td>${val.EMPRESASId}</td>
+                                <td>${val.Nombre}</td>
+                                <td>${val.Estado}</td>
+                                <td>${val.Empresa}</td>
                                 <td>
                                     <button class="btn btn-icon btn-warning" onclick="cargarRegistro(${val.Id})"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-icon btn-danger" onclick="eliminar(${val.Id})"><i class="fas fa-trash"></i></button>
+                                    <button class="btn btn-icon btn-${(val.Baja!=1?"danger":"primary")}" onclick="eliminar(${val.Id}, ${(val.Baja==1?0:1)})"><i class="feather icon-${(val.Baja==1?"check":"x")}"></i></button>
                                 </td>
                             </tr>`; 
                 });
@@ -291,20 +319,7 @@
             }
         });
             /* listar select puestos */
-        $.ajax({
-            type: "GET",
-            url: "{{route('puestos.listarselect')}}",
-            success: function (res) {
-                const dataP = res;
-
-                $('#puesto').select2({
-                    placeholder:"Seleccione un puesto",
-                    dropdownParent: $("#md-registro"),
-                    data:dataP
-                });
-                
-            }
-        });
+            SelectPuestos();
 
 
          /* listar select empresa */
@@ -316,6 +331,23 @@
 
                 $('#empresa').select2({
                     placeholder:"Seleccione una empresa",
+                    dropdownParent: $("#md-registro"),
+                    data:dataP
+                });
+                
+            }
+        });
+    }
+
+    function SelectPuestos(){
+        $.ajax({
+            type: "GET",
+            url: "{{route('puestos.listarselect')}}",
+            success: function (res) {
+                const dataP = res;
+
+                $('#puesto').select2({
+                    placeholder:"Seleccione un puesto",
                     dropdownParent: $("#md-registro"),
                     data:dataP
                 });

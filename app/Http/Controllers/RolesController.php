@@ -4,15 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Rol;
+use DB;
+use Auth;
 
 class RolesController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index(){
-        return view('roles');
+        $user = Auth::user();
+        return view('roles', compact('user'));
     }
 
     public function listar(){
         return Rol::all();
+    }
+
+    public function listarSelect(){
+        return DB::table('ROLES as rol')
+                    ->SELECT('rol.Id as id', 'rol.Nombre as text')
+                    ->GET();
     }
 
     public function save(Request $r){
